@@ -1,0 +1,9 @@
+[package]
+name = "rsground-runner"
+version = "0.1.0"
+description = "The runner engine for RsGround"
+edition = "2021"
+authors = ["Apika Luca"]
+
+[dependencies]
+hakoniwa = "1.1.0"
