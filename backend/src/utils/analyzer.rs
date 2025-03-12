@@ -15,8 +15,9 @@ pub fn analyzer_version() -> Option<String> {
         .output()
         .ok()
         .take_if(|res| res.status.success())
-        .and_then(|res| String::from_utf8(res.stdout)
-            .map(|output| output.replace("\n", ""))
-            .ok()
-        )
+        .and_then(|res| {
+            String::from_utf8(res.stdout)
+                .map(|output| output.replace("\n", ""))
+                .ok()
+        })
 }

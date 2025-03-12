@@ -1,7 +1,14 @@
-use std::{collections::HashMap, env::current_exe, fs::{create_dir_all, remove_dir_all, OpenOptions}, io::{Error as IoError, Write}, path::PathBuf, process::{Command, Stdio}};
 use log::error;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::Deserialize;
+use std::{
+    collections::HashMap,
+    env::current_exe,
+    fs::{create_dir_all, remove_dir_all, OpenOptions},
+    io::{Error as IoError, Write},
+    path::PathBuf,
+    process::{Command, Stdio},
+};
 use thiserror::Error;
 use toml::from_str;
 
@@ -19,13 +26,13 @@ pub enum RunnerCreateError {
     Context(String),
 
     #[error("Couldn't create cargo project: {0}")]
-    Project(String)
+    Project(String),
 }
 
 #[derive(Error, Debug)]
 pub enum RunnerDeleteError {
     #[error("Could not delete the runner files: {0}")]
-    DeleteFiles(#[from] IoError)
+    DeleteFiles(#[from] IoError),
 }
 
 #[derive(Error, Debug)]
@@ -34,7 +41,7 @@ pub enum RunnerUpdateError {
     UpdateFile(#[from] IoError),
 
     #[error("The passed TOML string is not valid or not allowed.")]
-    InvalidPackageString
+    InvalidPackageString,
 }
 
 // TODO: Implement another way to check the package string
@@ -43,19 +50,22 @@ pub enum RunnerUpdateError {
 #[derive(Deserialize)]
 struct Dependencies {
     #[serde(flatten)]
-    packages: HashMap<String, Package>
+    packages: HashMap<String, Package>,
 }
 
 #[derive(Deserialize)]
 #[serde(untagged)]
 enum Package {
     Simple(String),
-    Detailed { version: String, features: Option<Vec<String>> }
+    Detailed {
+        version: String,
+        features: Option<Vec<String>>,
+    },
 }
 
 pub struct Runner {
     hash: String,
-    path: PathBuf
+    path: PathBuf,
 }
 
 impl Runner {
@@ -78,8 +88,7 @@ impl Runner {
                 .map_err(|err| RunnerCreateError::Context(err.to_string()))?;
         }
 
-        let path = runners_path
-            .join(format!("runner_{hash}"));
+        let path = runners_path.join(format!("runner_{hash}"));
 
         Command::new("cargo")
             .args(["new", "--bin", &path.display().to_string()])
@@ -88,10 +97,7 @@ impl Runner {
             .status()
             .map_err(|err| RunnerCreateError::Project(err.to_string()))?;
 
-        Ok(Self {
-            hash,
-            path
-        })
+        Ok(Self { hash, path })
     }
 
     pub fn delete(&self) -> Result<(), RunnerDeleteError> {
@@ -102,9 +108,11 @@ impl Runner {
         &self.hash
     }
 
-    fn update_internal_file
-    (&self, extension: impl ToString, contents: &str)
-    -> Result<(), RunnerUpdateError> {
+    fn update_internal_file(
+        &self,
+        extension: impl ToString,
+        contents: &str,
+    ) -> Result<(), RunnerUpdateError> {
         OpenOptions::new()
             .write(true)
             .create(true)
@@ -132,51 +140,45 @@ impl Runner {
         );
 
         if from_str::<Dependencies>(code).is_err() {
-            return Err(RunnerUpdateError::InvalidPackageString)
+            return Err(RunnerUpdateError::InvalidPackageString);
         }
 
         self.update_internal_file("Cargo.toml", &(base_cargo_toml + code))
     }
 
-    pub fn run_code(&self) {
-        
-    }
+    pub fn run_code(&self) {}
 }
 
 impl RequestActor for Runner {
     type ContentType = String;
 
-    fn act(&self, op: &RunnerRequestOp, content: &Option<Self::ContentType>)
-    -> Result<(), ActError> {
-        
-
+    fn act(
+        &self,
+        op: &RunnerRequestOp,
+        content: &Option<Self::ContentType>,
+    ) -> Result<(), ActError> {
         let content = match content {
             Some(content) => content,
-            None => return Err(ActError::MissingContent)
+            None => return Err(ActError::MissingContent),
         };
 
         match op {
-            RunnerRequestOp::UploadCode => {
-                self.update_code(content)
-                    .map_err(|err| {
+            RunnerRequestOp::UploadCode => self.update_code(content).map_err(|err| {
+                error!("{err:?}");
+                ActError::InternalServerError
+            }),
+            RunnerRequestOp::UpdateCargo => {
+                self.update_packages(content).map_err(|err| match err {
+                    RunnerUpdateError::UpdateFile(err) => {
                         error!("{err:?}");
                         ActError::InternalServerError
-                    })
-            },
-            RunnerRequestOp::UpdateCargo => {
-                self.update_packages(content)
-                    .map_err(|err|
-                        match err {
-                            RunnerUpdateError::UpdateFile(err) => {
-                                error!("{err:?}");
-                                ActError::InternalServerError
-                            },
-                            RunnerUpdateError::InvalidPackageString
-                                => ActError::InvalidToml
-                        }
-                    )
-            },
-            _ => { unreachable!() }
+                    }
+                    RunnerUpdateError::InvalidPackageString => ActError::InvalidToml,
+                })
+            }
+            _ => {
+                unreachable!()
+            }
         }
     }
-} 
+}
