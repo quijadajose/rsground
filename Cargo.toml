@@ -1,2 +1,5 @@
 [workspace]
 members = ["backend", "backend/runner"]
+
+[workspace.dependencies]
+thiserror = "1.0.63"

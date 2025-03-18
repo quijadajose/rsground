@@ -5,5 +5,10 @@ description = "The runner engine for RsGround"
 edition = "2021"
 authors = ["Apika Luca"]
 
+[lib]
+test = true
+
 [dependencies]
 hakoniwa = "1.1.0"
+thiserror = { workspace = true }
+uuid = { version = "1.16.0", features = ["v4"] }

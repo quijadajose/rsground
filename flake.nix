@@ -6,9 +6,13 @@
     fenix-pkg.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = {nixpkgs, fenix-pkg, ...}: let
+  outputs = {
+    nixpkgs,
+    fenix-pkg,
+    ...
+  }: let
     system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
+    pkgs = import nixpkgs {inherit system;};
     lib = pkgs.lib;
     fenix = fenix-pkg.packages.${system};
 
@@ -18,8 +22,16 @@
       sha256 = "sha256-AJ6LX/Q/Er9kS15bn9iflkUwcgYqRQxiOIL2ToVAXaU=";
     };
 
-    backendBuildInputs = [
+    commonBuildInputs = with pkgs; [
+      just
+    ];
+
+    backendBuildInputs = with pkgs; [
       (toolchain.withComponents ["rustc" "cargo" "rust-src"])
+
+      # LXC vendor
+      ouch
+      rsync
     ];
 
     frontendBuildInputs = with pkgs; [
@@ -28,10 +40,17 @@
     ];
   in {
     devShells.${system}.default = pkgs.mkShell {
-      buildInputs = backendBuildInputs ++ frontendBuildInputs;
+      buildInputs =
+        commonBuildInputs
+        ++ backendBuildInputs
+        ++ frontendBuildInputs;
+
+      LIBSECCOMP_LIB_PATH = "${lib.makeLibraryPath [pkgs.libseccomp]}";
+      LD_LIBRARY_PATH = "${lib.makeLibraryPath [pkgs.libseccomp]}";
 
       shellHook = ''
         cd frontend && pnpm install --frozen-lockfile || pnpm install
+        just setup-vendor-if-not
       '';
     };
   };
