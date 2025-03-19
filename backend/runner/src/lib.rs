@@ -76,23 +76,72 @@ impl Runner {
         self.container
             .command(cmd.as_ref())
             .args(args)
-
-            // .command("/bin/sh")
-            // .arg("-c")
-            // .arg(&format!(
-            //     "{} {}",
-            //     cmd.as_ref(),
-            //     args.into_iter()
-            //         .map(|a| a.as_ref().to_owned())
-            //         .collect::<Vec<_>>()
-            //         .join(" ")
-            // ))
             .env("HOME", "/home")
             .env("PATH", "/bin")
             .env("PROG", "/bin/cc")
             .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
             .current_dir("/home")
-            // .spawn()
+            .output()
+            .map(|mut output| {
+                if output.stderr.starts_with(b"hakoniwa: ") {
+                    output.stderr = output.stderr[10..].to_vec()
+                }
+
+                output
+            })
+    }
+
+    pub fn run_bash(
+        &self,
+        cmd: impl AsRef<str>,
+        args: impl IntoIterator<Item = impl AsRef<str>>,
+    ) -> Result<Output, hakoniwa::Error> {
+        self.container
+            .command("/bin/bash")
+            .arg("-c")
+            .arg(&format!(
+                "{} {}",
+                cmd.as_ref(),
+                args.into_iter()
+                    .map(|a| a.as_ref().to_string())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            ))
+            .env("HOME", "/home")
+            .env("PATH", "/bin")
+            .env("PROG", "/bin/cc")
+            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
+            .current_dir("/home")
+            .output()
+            .map(|mut output| {
+                if output.stderr.starts_with(b"hakoniwa: ") {
+                    output.stderr = output.stderr[10..].to_vec()
+                }
+
+                output
+            })
+    }
+
+    pub fn run_rustc(
+        &self,
+        args: impl IntoIterator<Item = impl AsRef<str>>,
+    ) -> Result<Output, hakoniwa::Error> {
+        self.container
+            .command("/bin/rustc")
+            // .args([
+            //     "-C",
+            //     "linker=/bin/ld",
+            //     "-C",
+            //     "link-args=-L/lib",
+            //     "-C",
+            //     "link-args=-L/lib/gcc/x86_64-unknown-linux-gnu/14.2.1",
+            // ])
+            .args(args)
+            .env("HOME", "/home")
+            .env("PATH", "/bin")
+            .env("PROG", "/bin/cc")
+            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
+            .current_dir("/home")
             .output()
             .map(|mut output| {
                 if output.stderr.starts_with(b"hakoniwa: ") {

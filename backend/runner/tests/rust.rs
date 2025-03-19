@@ -1,33 +1,63 @@
+const HELLO_WORLD_RS: &str = r#"
+fn main() {
+    print!("Hello World");
+}
+"#;
+
 #[test]
-fn rust() {
+fn rust_compilation() {
     let runner = rsground_runner::Runner::new().expect("The runners was not created");
 
-    runner
-        .create_file(
-            "main.rs",
-            r#"
-            fn main() {
-                println!("Hello World");
-            }
-            "#,
-        )
-        .unwrap();
+    runner.create_file("main.rs", HELLO_WORLD_RS).unwrap();
 
-    let output = runner
-        // .run("/bin/ls", ["-l", "/"])
-        // .run("/bin/whoami", [] as [&str; 0])
-        .run("/bin/rustc", [ "-C", "linker=/bin/ld", "-C", "link-args=-L/lib", "-C", "link-args=-L/lib/gcc/x86_64-unknown-linux-gnu/14.2.1", "main.rs"])
-        // .run(
-        //     "/bin/rustc",
-        //     ["-C", "linker=/bin/cc", "--print", "link-args", "main.rs"],
-        // )
-        .expect("Cannot run code");
+    let output = runner.run_rustc(["main.rs"]).expect("Cannot run code");
 
     eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
     eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
 
-    panic!("Forced stop")
+    assert_eq!(output.status.success(), true);
+    assert_eq!(output.stdout, "".as_bytes().to_vec());
+}
 
-    // assert_eq!(output.status.success(), true);
-    // assert_eq!(output.stdout, "Hello World".as_bytes().to_vec());
+#[test]
+fn rust_executable() {
+    let runner = rsground_runner::Runner::new().expect("The runners was not created");
+
+    runner.create_file("main.rs", HELLO_WORLD_RS).unwrap();
+
+    let output = runner.run_rustc(["main.rs"]).expect("Cannot run code");
+
+    eprintln!("-- COMPILATION --");
+    eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
+    eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
+
+    assert_eq!(output.status.success(), true);
+
+    let output = runner
+        .run(
+            "/bin/patchelf",
+            [
+                "--set-interpreter",
+                "/lib/ld-linux-x86-64.so.2",
+                "/home/main",
+            ],
+        )
+        .expect("Cannot run code");
+
+    eprintln!("-- PATCHING --");
+    eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
+    eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
+
+    assert_eq!(output.status.success(), true);
+
+    let output = runner
+        .run("/home/main", [] as [&str; 0])
+        .expect("Cannot run code");
+
+    eprintln!("-- EXECUTABLE --");
+    eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
+    eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
+
+    assert_eq!(output.status.success(), true);
+    assert_eq!(output.stdout, "Hello World".as_bytes().to_vec());
 }

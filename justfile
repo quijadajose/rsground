@@ -30,6 +30,7 @@
   just setup-vendor-uncompress coreutils-full-9.6
   just setup-vendor-uncompress file-5.46
   just setup-vendor-uncompress gcc-14-20241116
+  just setup-vendor-uncompress gcc-14-20241116-lib
   just setup-vendor-uncompress glibc-2.40-66-lib
   just setup-vendor-uncompress glibc-2.40-66-bin
   just setup-vendor-uncompress gmp-with-cxx-6.3.0
@@ -38,6 +39,7 @@
   just setup-vendor-uncompress mpfr-4.2.1
   just setup-vendor-uncompress ncurses-6.5
   just setup-vendor-uncompress openssl-3.4.1
+  just setup-vendor-uncompress patchelf-0.15.0
   just setup-vendor-uncompress readline-8.2p13
   just setup-vendor-uncompress rust-1.85.0
   just setup-vendor-uncompress xgcc-14-20241116-libgcc
@@ -64,6 +66,7 @@
   just setup-vendor-rootfs coreutils-full-9.6
   just setup-vendor-rootfs file-5.46
   just setup-vendor-rootfs gcc-14-20241116
+  just setup-vendor-rootfs gcc-14-20241116-lib
   just setup-vendor-rootfs glibc-2.40-66-lib
   just setup-vendor-rootfs glibc-2.40-66-bin
   just setup-vendor-rootfs gmp-with-cxx-6.3.0
@@ -72,6 +75,7 @@
   just setup-vendor-rootfs mpfr-4.2.1
   just setup-vendor-rootfs ncurses-6.5
   just setup-vendor-rootfs openssl-3.4.1
+  just setup-vendor-rootfs patchelf-0.15.0
   just setup-vendor-rootfs readline-8.2p13
   just setup-vendor-rootfs rust-1.85.0
   just setup-vendor-rootfs xgcc-14-20241116-libgcc
