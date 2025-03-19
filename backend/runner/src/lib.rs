@@ -47,6 +47,8 @@ impl Runner {
         let mut home = self.temp_home.clone();
         home.push(container_path.as_ref());
 
+        fs::create_dir_all(home.parent().unwrap()).unwrap();
+
         fs::write(home, content.as_ref())
     }
 

@@ -1,11 +1,5 @@
 mod common;
-use common::print_output;
-
-const HELLO_WORLD_RS: &str = r#"
-fn main() {
-    print!("Hello World");
-}
-"#;
+use common::{print_output, HELLO_WORLD_RS};
 
 #[test]
 fn rust_compilation() {
@@ -34,9 +28,7 @@ fn rust_executable() {
 
     assert_eq!(output.status.success(), true);
 
-    let output = runner
-        .patch_binary("/home/main")
-        .expect("Cannot run code");
+    let output = runner.patch_binary("/home/main").expect("Cannot run code");
 
     eprintln!("-- PATCHING --");
     print_output(&output);
