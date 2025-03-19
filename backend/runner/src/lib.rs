@@ -50,6 +50,37 @@ impl Runner {
         fs::write(home, content.as_ref())
     }
 
+    pub fn copy_file_from_runner(
+        &self,
+        other: &Runner,
+        host_path: impl AsRef<Path>,
+        other_path: impl AsRef<Path>,
+    ) {
+        let mut host_file_path = self.temp_home.clone();
+        host_file_path.push(host_path);
+
+        let mut other_file_path = other.temp_home.clone();
+        other_file_path.push(other_path);
+
+        std::fs::copy(other_file_path, host_file_path).expect("Skill issuer de manual");
+    }
+
+    fn run_command(cmd: &mut Command) -> Result<Output, hakoniwa::Error> {
+        cmd.env("HOME", "/home")
+            .env("PATH", "/bin")
+            .env("PROG", "/bin/cc")
+            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
+            .current_dir("/home")
+            .output()
+            .map(|mut output| {
+                if output.stderr.starts_with(b"hakoniwa: ") {
+                    output.stderr = output.stderr[10..].to_vec()
+                }
+
+                output
+            })
+    }
+
     pub fn spawn(
         &self,
         cmd: impl AsRef<str>,
@@ -73,22 +104,7 @@ impl Runner {
         cmd: impl AsRef<str>,
         args: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<Output, hakoniwa::Error> {
-        self.container
-            .command(cmd.as_ref())
-            .args(args)
-            .env("HOME", "/home")
-            .env("PATH", "/bin")
-            .env("PROG", "/bin/cc")
-            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
-            .current_dir("/home")
-            .output()
-            .map(|mut output| {
-                if output.stderr.starts_with(b"hakoniwa: ") {
-                    output.stderr = output.stderr[10..].to_vec()
-                }
-
-                output
-            })
+        Self::run_command(self.container.command(cmd.as_ref()).args(args))
     }
 
     pub fn run_bash(
@@ -96,60 +112,36 @@ impl Runner {
         cmd: impl AsRef<str>,
         args: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<Output, hakoniwa::Error> {
-        self.container
-            .command("/bin/bash")
-            .arg("-c")
-            .arg(&format!(
+        Self::run_command(self.container.command("/bin/bash").arg("-c").arg(&format!(
                 "{} {}",
                 cmd.as_ref(),
                 args.into_iter()
                     .map(|a| a.as_ref().to_string())
                     .collect::<Vec<_>>()
                     .join(" ")
-            ))
-            .env("HOME", "/home")
-            .env("PATH", "/bin")
-            .env("PROG", "/bin/cc")
-            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
-            .current_dir("/home")
-            .output()
-            .map(|mut output| {
-                if output.stderr.starts_with(b"hakoniwa: ") {
-                    output.stderr = output.stderr[10..].to_vec()
-                }
-
-                output
-            })
+            )))
     }
 
     pub fn run_rustc(
         &self,
         args: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<Output, hakoniwa::Error> {
-        self.container
-            .command("/bin/rustc")
-            // .args([
-            //     "-C",
-            //     "linker=/bin/ld",
-            //     "-C",
-            //     "link-args=-L/lib",
-            //     "-C",
-            //     "link-args=-L/lib/gcc/x86_64-unknown-linux-gnu/14.2.1",
-            // ])
-            .args(args)
-            .env("HOME", "/home")
-            .env("PATH", "/bin")
-            .env("PROG", "/bin/cc")
-            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
-            .current_dir("/home")
-            .output()
-            .map(|mut output| {
-                if output.stderr.starts_with(b"hakoniwa: ") {
-                    output.stderr = output.stderr[10..].to_vec()
-                }
+        Self::run_command(
+            self.container
+                .command("/bin/rustc")
+                // -C linker=/bin/ld -C link-args=-L/lib -C link-args=-L/lib/gcc/x86_64-unknown-linux-gnu/14.2.1
+                .args(args),
+        )
+    }
 
-                output
-            })
+    pub fn patch_binary(&self, path: impl AsRef<str>) -> Result<Output, hakoniwa::Error> {
+        Self::run_command(
+            self.container
+                .command("/bin/patchelf")
+                .arg("--set-interpreter")
+                .arg("/lib/ld-linux-x86-64.so.2")
+                .arg(path.as_ref()),
+        )
     }
 }
 

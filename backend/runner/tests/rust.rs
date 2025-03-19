@@ -1,3 +1,6 @@
+mod common;
+use common::print_output;
+
 const HELLO_WORLD_RS: &str = r#"
 fn main() {
     print!("Hello World");
@@ -12,8 +15,7 @@ fn rust_compilation() {
 
     let output = runner.run_rustc(["main.rs"]).expect("Cannot run code");
 
-    eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
-    eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
+    print_output(&output);
 
     assert_eq!(output.status.success(), true);
     assert_eq!(output.stdout, "".as_bytes().to_vec());
@@ -28,25 +30,16 @@ fn rust_executable() {
     let output = runner.run_rustc(["main.rs"]).expect("Cannot run code");
 
     eprintln!("-- COMPILATION --");
-    eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
-    eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
+    print_output(&output);
 
     assert_eq!(output.status.success(), true);
 
     let output = runner
-        .run(
-            "/bin/patchelf",
-            [
-                "--set-interpreter",
-                "/lib/ld-linux-x86-64.so.2",
-                "/home/main",
-            ],
-        )
+        .patch_binary("/home/main")
         .expect("Cannot run code");
 
     eprintln!("-- PATCHING --");
-    eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
-    eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
+    print_output(&output);
 
     assert_eq!(output.status.success(), true);
 
@@ -55,8 +48,47 @@ fn rust_executable() {
         .expect("Cannot run code");
 
     eprintln!("-- EXECUTABLE --");
-    eprintln!("-- STDOUT\n{}", String::from_utf8_lossy(&output.stdout));
-    eprintln!("-- STDERR\n{}", String::from_utf8_lossy(&output.stderr));
+    print_output(&output);
+
+    assert_eq!(output.status.success(), true);
+    assert_eq!(output.stdout, "Hello World".as_bytes().to_vec());
+}
+
+#[test]
+fn rust_multi_container_executable() {
+    let executer_runner = rsground_runner::Runner::new().expect("The runners was not created");
+    let compiler_runner = rsground_runner::Runner::new().expect("The runners was not created");
+
+    compiler_runner
+        .create_file("main.rs", HELLO_WORLD_RS)
+        .unwrap();
+
+    let output = compiler_runner
+        .run_rustc(["main.rs"])
+        .expect("Cannot run code");
+
+    eprintln!("-- COMPILATION --");
+    print_output(&output);
+
+    assert_eq!(output.status.success(), true);
+
+    let output = compiler_runner
+        .patch_binary("/home/main")
+        .expect("Cannot run code");
+
+    eprintln!("-- PATCHING --");
+    print_output(&output);
+
+    assert_eq!(output.status.success(), true);
+
+    executer_runner.copy_file_from_runner(&compiler_runner, "main", "main");
+
+    let output = executer_runner
+        .run("/home/main", [] as [&str; 0])
+        .expect("Cannot run code");
+
+    eprintln!("-- EXECUTABLE --");
+    print_output(&output);
 
     assert_eq!(output.status.success(), true);
     assert_eq!(output.stdout, "Hello World".as_bytes().to_vec());

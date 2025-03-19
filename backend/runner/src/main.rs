@@ -12,12 +12,8 @@ fn main() {
         )
         .unwrap();
 
-
     runner
-        .create_file(
-            "main.c",
-            r#"int main() { return 0; }"#
-        )
+        .create_file("main.c", r#"int main() { return 0; }"#)
         .unwrap();
 
     let mut cmd = runner.spawn("/bin/bash", ["-i"]).unwrap();
