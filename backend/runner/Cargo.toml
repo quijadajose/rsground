@@ -11,4 +11,5 @@ test = true
 [dependencies]
 hakoniwa = "1.1.0"
 thiserror = { workspace = true }
+tokio = { version = "1.44.1", features = ["full"] }
 uuid = { version = "1.16.0", features = ["v4"] }

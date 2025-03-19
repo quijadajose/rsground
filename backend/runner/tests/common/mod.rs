@@ -1,3 +1,8 @@
+#![allow(
+    dead_code,
+    reason = "Common is used in many test, there are dead_code for some of them"
+)]
+
 pub mod cargo;
 
 use hakoniwa::Output;

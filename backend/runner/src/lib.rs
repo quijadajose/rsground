@@ -1,9 +1,10 @@
 pub mod error;
 
+use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::{fs, io};
+use tokio::{fs, io};
 
-use hakoniwa::{Command, Container, Output};
+use hakoniwa::{Command, Container, ExitStatus, Output};
 
 pub struct Runner {
     container: Container,
@@ -11,9 +12,18 @@ pub struct Runner {
 }
 
 impl Runner {
-    fn create_container(temp_home: &PathBuf) -> Container {
-        fs::create_dir(temp_home).expect("Cannot create home");
+    async fn create_home() -> PathBuf {
+        let mut temp_home = PathBuf::from("/tmp");
+        temp_home.push(uuid::Uuid::new_v4().simple().to_string());
 
+        fs::create_dir(&temp_home)
+            .await
+            .expect("Cannot create home");
+
+        temp_home
+    }
+
+    fn create_container(temp_home: &PathBuf) -> Container {
         Container::new()
             .hostname("rsground")
             .rootfs(concat!(env!("CARGO_MANIFEST_DIR"), "/lxc_rootfs"))
@@ -28,31 +38,31 @@ impl Runner {
             .clone()
     }
 
-    pub fn new() -> Result<Self, ()> {
-        let mut temp_home = PathBuf::from("/tmp");
-        temp_home.push(uuid::Uuid::new_v4().simple().to_string());
-
+    pub async fn new() -> Result<Self, ()> {
+        let temp_home = Self::create_home().await;
         let container = Self::create_container(&temp_home);
+
         Ok(Self {
             container,
             temp_home,
         })
     }
 
-    pub fn create_file(
+    pub async fn create_file(
         &self,
         container_path: impl AsRef<str>,
         content: impl AsRef<str>,
     ) -> io::Result<()> {
         let mut home = self.temp_home.clone();
+        // FIXME: This is security breach, needs to check if path is inside the container
         home.push(container_path.as_ref());
 
-        fs::create_dir_all(home.parent().unwrap()).unwrap();
+        fs::create_dir_all(home.parent().unwrap()).await.unwrap();
 
-        fs::write(home, content.as_ref())
+        fs::write(home, content.as_ref()).await
     }
 
-    pub fn copy_file_from_runner(
+    pub async fn copy_file_from_runner(
         &self,
         other: &Runner,
         host_path: impl AsRef<Path>,
@@ -64,25 +74,77 @@ impl Runner {
         let mut other_file_path = other.temp_home.clone();
         other_file_path.push(other_path);
 
-        std::fs::copy(other_file_path, host_file_path).expect("Skill issuer de manual");
+        fs::copy(other_file_path, host_file_path)
+            .await
+            .expect("Skill issuer de manual");
     }
 
-    fn run_command(cmd: &mut Command) -> Result<Output, hakoniwa::Error> {
-        cmd.env("HOME", "/home")
+    async fn collect_output(cmd: &mut Command) -> Result<Output, hakoniwa::Error> {
+        let mut child = cmd
+            .env("HOME", "/home")
             .env("PATH", "/bin")
             .env("PROG", "/bin/cc")
             .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
             .current_dir("/home")
-            .output()
-            .map(|mut output| {
-                if output.stderr.starts_with(b"hakoniwa: ") {
-                    output.stderr = output.stderr[10..].to_vec()
-                }
+            .stdin(hakoniwa::Stdio::MakePipe)
+            .stdout(hakoniwa::Stdio::MakePipe)
+            .stderr(hakoniwa::Stdio::MakePipe)
+            .spawn()?;
 
-                output
-            })
+        let stdout = child.stdout.take();
+        let stdout = tokio::spawn(async {
+            let mut buf = Vec::new();
+
+            let Some(mut stdout) = stdout else { return buf };
+
+            _ = stdout.read_to_end(&mut buf);
+
+            buf
+        });
+        let stderr = child.stderr.take();
+        let stderr = tokio::spawn(async {
+            let mut buf = Vec::new();
+
+            let Some(mut stderr) = stderr else { return buf };
+
+            _ = stderr.read_to_end(&mut buf);
+
+            buf
+        });
+
+        let status = tokio::spawn(async move { child.wait() });
+
+        let (status, stdout, stderr) = tokio::join!(status, stdout, stderr);
+
+        let status = status
+            .inspect_err(|err| eprintln!("Join error: {err}"))
+            .map(|o| o.inspect_err(|err| eprintln!("Join error: {err}")).ok())
+            .ok()
+            .flatten()
+            .unwrap_or(ExitStatus {
+                code: 126,
+                reason: "Cannot retrieve exit status".to_owned(),
+                exit_code: None,
+                rusage: None,
+            });
+
+        let stdout = stdout
+            .inspect_err(|err| eprintln!("Join error: {err}"))
+            .unwrap_or_default();
+
+        let stderr = stderr
+            .inspect_err(|err| eprintln!("Join error: {err}"))
+            .unwrap_or_default();
+
+        Ok(Output {
+            status,
+            stdout,
+            stderr,
+        })
     }
 
+    /// Spawn process with shared stdio.
+    /// Focused in interactive shell for manual testing
     pub fn spawn(
         &self,
         cmd: impl AsRef<str>,
@@ -101,54 +163,56 @@ impl Runner {
             .spawn()
     }
 
-    pub fn run(
+    pub async fn run(
         &self,
         cmd: impl AsRef<str>,
         args: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<Output, hakoniwa::Error> {
-        Self::run_command(self.container.command(cmd.as_ref()).args(args))
+        Self::collect_output(self.container.command(cmd.as_ref()).args(args)).await
     }
 
-    pub fn run_bash(
+    pub async fn run_bash(
         &self,
         cmd: impl AsRef<str>,
         args: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<Output, hakoniwa::Error> {
-        Self::run_command(self.container.command("/bin/bash").arg("-c").arg(&format!(
-                "{} {}",
-                cmd.as_ref(),
-                args.into_iter()
-                    .map(|a| a.as_ref().to_string())
-                    .collect::<Vec<_>>()
-                    .join(" ")
-            )))
+        let args = args
+            .into_iter()
+            .map(|a| a.as_ref().to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
+        let cmd = format!("{} {args}", cmd.as_ref());
+        Self::collect_output(self.container.command("/bin/bash").arg("-c").arg(&cmd)).await
     }
 
-    pub fn run_rustc(
+    pub async fn run_rustc(
         &self,
         args: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<Output, hakoniwa::Error> {
-        Self::run_command(
+        Self::collect_output(
             self.container
                 .command("/bin/rustc")
                 // -C linker=/bin/ld -C link-args=-L/lib -C link-args=-L/lib/gcc/x86_64-unknown-linux-gnu/14.2.1
                 .args(args),
         )
+        .await
     }
 
-    pub fn patch_binary(&self, path: impl AsRef<str>) -> Result<Output, hakoniwa::Error> {
-        Self::run_command(
+    pub async fn patch_binary(&self, path: impl AsRef<str>) -> Result<Output, hakoniwa::Error> {
+        Self::collect_output(
             self.container
                 .command("/bin/patchelf")
                 .arg("--set-interpreter")
                 .arg("/lib/ld-linux-x86-64.so.2")
                 .arg(path.as_ref()),
         )
+        .await
     }
 }
 
 impl Drop for Runner {
     fn drop(&mut self) {
-        fs::remove_dir_all(&self.temp_home).unwrap();
+        _ = std::fs::remove_dir_all(&self.temp_home)
+            .inspect_err(|err| eprintln!("cannot delete temp home: {err}"));
     }
 }

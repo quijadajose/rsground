@@ -9,7 +9,7 @@ version = "0.1.0"
 edition = "2021"
 "#;
 
-pub fn cargo_init(runner: &Runner) {
-    runner.create_file("Cargo.toml", CARGO_TOML).unwrap();
-    runner.create_file("src/main.rs", HELLO_WORLD_RS).unwrap();
+pub async fn cargo_init(runner: &Runner) {
+    runner.create_file("Cargo.toml", CARGO_TOML).await.unwrap();
+    runner.create_file("src/main.rs", HELLO_WORLD_RS).await.unwrap();
 }
