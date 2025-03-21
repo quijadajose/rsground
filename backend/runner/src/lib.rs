@@ -1,10 +1,18 @@
 pub mod error;
+pub mod rls;
 
+use os_pipe::{PipeReader, PipeWriter};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use tokio::{fs, io};
 
-use hakoniwa::{Command, Container, ExitStatus, Output};
+use hakoniwa::{Child, Command, Container, ExitStatus, Output};
+
+pub const BASE_ENV: [(&str, &str); 3] = [
+    ("HOME", "/home"),
+    ("PATH", "/bin"),
+    ("LD_LIBRARY_PATH", "/lib:/lib64:/libexec"),
+];
 
 pub struct Runner {
     container: Container,
@@ -81,10 +89,7 @@ impl Runner {
 
     async fn collect_output(cmd: &mut Command) -> Result<Output, hakoniwa::Error> {
         let mut child = cmd
-            .env("HOME", "/home")
-            .env("PATH", "/bin")
-            .env("PROG", "/bin/cc")
-            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
+            .envs(BASE_ENV)
             .current_dir("/home")
             .stdin(hakoniwa::Stdio::MakePipe)
             .stdout(hakoniwa::Stdio::MakePipe)
@@ -153,14 +158,30 @@ impl Runner {
         self.container
             .command(cmd.as_ref())
             .args(args)
-            .env("HOME", "/home")
-            .env("PATH", "/bin")
-            .env("LD_LIBRARY_PATH", "/lib:/lib64:/libexec")
+            .envs(BASE_ENV)
             .stdin(hakoniwa::Stdio::Inherit)
             .stdout(hakoniwa::Stdio::Inherit)
             .stderr(hakoniwa::Stdio::Inherit)
             .current_dir("/home")
             .spawn()
+    }
+
+    pub fn start_rls(&mut self) -> hakoniwa::Result<(Child, PipeWriter, PipeReader, PipeReader)> {
+        let mut child = self
+            .container
+            .command("/bin/rust-analyzer")
+            .envs(BASE_ENV)
+            .stdin(hakoniwa::Stdio::MakePipe)
+            .stdout(hakoniwa::Stdio::MakePipe)
+            .stderr(hakoniwa::Stdio::MakePipe)
+            .current_dir("/home")
+            .spawn()?;
+
+        let stdin = child.stdin.take().expect("Needs communication >:(");
+        let stdout = child.stdout.take().expect("Needs communication >:(");
+        let stderr = child.stderr.take().expect("Needs communication >:(");
+
+        Ok((child, stdin, stdout, stderr))
     }
 
     pub async fn run(

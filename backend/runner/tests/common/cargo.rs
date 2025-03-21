@@ -11,5 +11,8 @@ edition = "2021"
 
 pub async fn cargo_init(runner: &Runner) {
     runner.create_file("Cargo.toml", CARGO_TOML).await.unwrap();
-    runner.create_file("src/main.rs", HELLO_WORLD_RS).await.unwrap();
+    runner
+        .create_file("src/main.rs", HELLO_WORLD_RS)
+        .await
+        .unwrap();
 }

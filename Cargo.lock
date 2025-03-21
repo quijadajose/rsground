@@ -1392,6 +1392,8 @@ name = "rsground-runner"
 version = "0.1.0"
 dependencies = [
  "hakoniwa",
+ "lsp-types",
+ "os_pipe",
  "thiserror 1.0.69",
  "tokio",
  "uuid",
