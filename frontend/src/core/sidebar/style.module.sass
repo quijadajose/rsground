@@ -5,6 +5,33 @@
   padding: 0.5rem
   display: flex
   flex-direction: column
+  position: relative
+
+  .body,
+  .nav_item,
+  .nav_item svg
+    transition: transform 200ms ease-out
+
+  .nav_item:nth-last-child(1)
+    transition: all 200ms ease-out
+    position: absolute
+    left: calc(250px - 36px)
+    height: 34px
+
+  &.closed 
+    width: 0px
+
+    .body
+      transform: translateX(calc(-100% - 1rem))
+
+    .nav_item:not(:nth-last-child(1))
+      transform: scale(0)
+
+    .nav_item:nth-last-child(1)
+      left: 0%
+
+      svg
+        transform: rotateZ(180deg)
 
 .nav
   padding: 0 0.5rem
@@ -29,12 +56,12 @@
 .body
   display: grid
   grid-template-rows: 1fr auto auto
+  width: 250px
   height: 100%
   border: 2px solid #000
   border-radius: 12px
   box-shadow: 2px 2px 0px 0px #000
   background: #3D3D3D
-  overflow: hidden
 
 .item_trigger
   color: currentColor

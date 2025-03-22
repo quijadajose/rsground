@@ -1,6 +1,7 @@
 import Accordion from "@corvu/accordion";
+import { createSignal, ParentProps } from "solid-js";
 import style from "./style.module.sass";
-import { ParentProps } from "solid-js";
+import { isSidebarOpen, setIsSidebarOpen } from "./store";
 
 function SidebarItem(props: ParentProps<{ title: string }>) {
   return (
@@ -20,11 +21,18 @@ function SidebarItem(props: ParentProps<{ title: string }>) {
 
 export function Sidebar() {
   return (
-    <div class={style.container}>
+    <div
+      classList={{ [style.container]: true, [style.closed]: !isSidebarOpen() }}
+    >
       <nav class={style.nav}>
         <ul class={style.nav_items}>
           <li class={style.nav_item}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 20 20"
+            >
               <path
                 d="M4 5H16a1 1 0 010 2H4a1 1 0 010-2Zm0 4H16a1 1 0 010 2H4a1 1 0 010-2Zm0 4H16a1 1 0 010 2H4a1 1 0 010-2Z"
                 fill="currentColor"
@@ -46,10 +54,32 @@ export function Sidebar() {
               />
             </svg>
           </li>
+
+          <li
+            role="button"
+            on:click={() => setIsSidebarOpen((prev) => !prev)}
+            class={style.nav_item}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M14 7L9 12L14 17"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </li>
         </ul>
       </nav>
 
-      <div class={style.body}>
+      <div class={style.body} >
         <Accordion multiple>
           <Accordion.Item>
             <div class={style.body_file}>
