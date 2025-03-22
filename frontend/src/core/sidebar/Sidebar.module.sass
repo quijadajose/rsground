@@ -1,40 +1,60 @@
+$sidebar_buttons: 5
+$sidebar_buttons_gap: 0.5rem
+$sidebar_buttons_width: 36px
+
 .container
-  max-width: 250px
+  width: 250px
   height: 100%
   max-height: 100vh
   padding: 0.5rem
   display: flex
   flex-direction: column
-  position: relative
 
-  .body,
-  .nav_item,
-  .nav_item svg
+  transition: width 200ms ease-out
+
+  .body
     transition: transform 200ms ease-out
 
+  .nav_item,
+  .nav_item svg
+    transition: left 200ms ease-out
+
+  @for $i from 0 to $sidebar_buttons
+    .nav_item:nth-child(#{$i + 1})
+      transition: left 200ms ease-out, top 200ms ease-out
+      position: absolute
+      top: $sidebar_buttons_gap
+      left: calc(#{$sidebar_buttons_gap + $i * $sidebar_buttons_gap} + #{$i * $sidebar_buttons_width})
+      height: 34px
+
   .nav_item:nth-last-child(1)
-    transition: all 200ms ease-out
-    position: absolute
-    left: calc(250px - 36px)
-    height: 34px
+    left: calc(#{250px - $sidebar_buttons_width} - 1.5rem)
 
   &.closed 
-    width: 0px
+    width: calc($sidebar_buttons_width + $sidebar_buttons_gap)
 
     .body
       transform: translateX(calc(-100% - 1rem))
 
-    .nav_item:not(:nth-last-child(1))
-      transform: scale(0)
+    .nav_item
+      left: -0.5rem
 
-    .nav_item:nth-last-child(1)
-      left: 0%
+    .nav_item:nth-child(1)
+      top: -0.25rem
+
+    @for $i from 2 to $sidebar_buttons
+      .nav_item:nth-child(#{$i})
+        top: calc(#{$i * $sidebar_buttons_width} + #{($i - 1) * $sidebar_buttons_gap} + 0.15rem)
+
+    .nav_item:nth-last-child(1) 
+      top: calc($sidebar_buttons_width + 0.15rem)
 
       svg
         transform: rotateZ(180deg)
 
 .nav
-  padding: 0 0.5rem
+  height: calc(36px + 1rem)
+  position: relative
 
 .nav_items
   list-style-type: none
@@ -56,7 +76,7 @@
 .body
   display: grid
   grid-template-rows: 1fr auto auto
-  width: 250px
+  width: calc(250px - 1rem)
   height: 100%
   border: 2px solid #000
   border-radius: 12px
