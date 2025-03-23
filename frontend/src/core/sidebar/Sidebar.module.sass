@@ -24,17 +24,14 @@ $sidebar_buttons_width: 36px
       transition: left 200ms ease-out, top 200ms ease-out
       position: absolute
       top: $sidebar_buttons_gap
-      left: calc(#{$sidebar_buttons_gap + $i * $sidebar_buttons_gap} + #{$i * $sidebar_buttons_width})
+      left: calc(#{1.25 * $sidebar_buttons_gap + $i * $sidebar_buttons_gap} + #{$i * $sidebar_buttons_width})
       height: 34px
-
-  .nav_item:nth-last-child(1)
-    left: calc(#{250px - $sidebar_buttons_width} - 1.5rem)
 
   &.closed 
     width: calc($sidebar_buttons_width + $sidebar_buttons_gap)
 
     + div
-      width: 100%
+      width: calc(100vw - $sidebar_buttons_width - $sidebar_buttons_gap)
 
     .body
       transform: translateX(calc(-100% - 1rem))
