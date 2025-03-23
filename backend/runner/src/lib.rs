@@ -1,5 +1,4 @@
 pub mod error;
-pub mod rls;
 
 use os_pipe::{PipeReader, PipeWriter};
 use std::io::Read;

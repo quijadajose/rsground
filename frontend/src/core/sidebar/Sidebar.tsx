@@ -1,7 +1,9 @@
 import Accordion from "@corvu/accordion";
 import { ParentProps } from "solid-js";
-import style from "./Sidebar.module.sass";
+
 import { isSidebarOpen, setIsSidebarOpen } from "./store";
+
+import style from "./Sidebar.module.sass";
 
 function SidebarItem(props: ParentProps<{ title: string }>) {
   return (

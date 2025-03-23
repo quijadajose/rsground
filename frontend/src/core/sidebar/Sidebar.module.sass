@@ -12,11 +12,11 @@ $sidebar_buttons_width: 36px
 
   transition: width 200ms ease-out
 
-  .body
+  .body,
+  .nav_item svg
     transition: transform 200ms ease-out
 
-  .nav_item,
-  .nav_item svg
+  .nav_item
     transition: left 200ms ease-out
 
   @for $i from 0 to $sidebar_buttons
@@ -33,11 +33,14 @@ $sidebar_buttons_width: 36px
   &.closed 
     width: calc($sidebar_buttons_width + $sidebar_buttons_gap)
 
+    + div
+      width: 100%
+
     .body
       transform: translateX(calc(-100% - 1rem))
 
     .nav_item
-      left: -0.5rem
+      left: 0rem
 
     .nav_item:nth-child(1)
       top: -0.25rem
@@ -55,6 +58,7 @@ $sidebar_buttons_width: 36px
 .nav
   height: calc(36px + 1rem)
   position: relative
+  z-index: 1
 
 .nav_items
   list-style-type: none
@@ -67,7 +71,8 @@ $sidebar_buttons_width: 36px
   padding: 0.25rem 0.25rem
   border: 2px solid #000
   border-radius: 50px
-  background: #3D3D3D
+  color: black
+  background: #FF8637
   box-shadow: 2px 2px 0 0 #000
   display: flex
   justify-content: center
