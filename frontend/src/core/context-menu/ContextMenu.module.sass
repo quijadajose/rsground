@@ -1,0 +1,48 @@
+.anchor
+  position: absolute
+
+.content
+  z-index: 1;
+  background: #454545
+  border-radius: 8px
+  filter: drop-shadow(2px 2px 0px #000)
+  border: 2px solid #000
+  overflow: hidden
+
+  &[data-open]
+    animation: open-context-menu 100ms linear;
+
+    @keyframes open-context-menu
+      0%
+        scale: 0
+      100%
+        scale: 1
+
+  &[data-closed]
+    animation: closed-context-menu 100ms linear;
+
+    @keyframes closed-context-menu
+      0%
+        scale: 1
+      100%
+        scale: 0
+
+@mixin content-item($background, $color: $background, $pressed_color: black)
+  list-style-type: none
+  padding: 0.25rem 1rem
+  cursor: pointer
+  color: $color
+
+  &:not(.disabled):hover
+    background: $background
+    color: $pressed_color
+
+.item
+  @include content-item(#D9D6FE, white)
+.item_error
+  @include content-item(#FBA6AC)
+.item_warning
+  @include content-item(#F7D591)
+
+.disabled
+  color: #999

@@ -1,0 +1,42 @@
+.container
+  padding: 0.5rem
+
+  details > summary
+    list-style-type: none
+
+  li
+    list-style-type: none
+
+.entry_folder
+  color: #D9D6FE
+
+  > details 
+    > summary
+      display: flex
+      gap: 0.25rem
+
+    > ul
+      margin-left: 1em
+
+    &:not([open]) > summary > .opened_folder
+      display: none
+
+    &[open] > summary > .closed_folder
+      display: none
+
+.entry
+  display: flex
+  gap: 0.25rem
+  color: #D9D6FE
+
+  &_syncing
+    background: linear-gradient(to right, #D9D6FE00, #D9D6FE22 50px, #D9D6FE00 100px);
+    background-position-x: -90px
+    background-repeat: no-repeat
+    animation: syncing linear 2s infinite alternate
+
+    @keyframes syncing 
+      0%
+        background-position-x: -90px
+      50%
+        background-position-x: 200px

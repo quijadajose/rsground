@@ -4,6 +4,7 @@ import { ParentProps } from "solid-js";
 import { isSidebarOpen, setIsSidebarOpen } from "./store";
 
 import style from "./Sidebar.module.sass";
+import { FileExplorer } from "./file-explorer";
 
 function SidebarItem(props: ParentProps<{ title: string }>) {
   return (
@@ -114,9 +115,7 @@ export function Sidebar() {
       <div class={style.body} >
         <Accordion multiple>
           <Accordion.Item>
-            <div class={style.body_file}>
-              B
-            </div>
+            <FileExplorer />
           </Accordion.Item>
 
           <SidebarItem title="Dependencies">
