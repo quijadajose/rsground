@@ -1,5 +1,4 @@
-
-pub mod runner;
-pub mod logger;
-pub mod communication;
 pub mod analyzer;
+pub mod communication;
+pub mod logger;
+pub mod runner;

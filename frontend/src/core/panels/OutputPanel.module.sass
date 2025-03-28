@@ -1,0 +1,67 @@
+.container
+  height: 100%
+  display: flex
+  flex-direction: column
+
+.actions
+  display: flex
+  gap: 0.5rem
+  padding: 0.5rem 0.5rem
+  color: white
+
+  > li
+    list-style-type: none
+
+.action_play
+  color: #48E78F
+
+.action_kill
+  color: #F87480
+
+.output
+  overflow: auto
+  height: 100%
+  padding: 0.25rem 0.5rem
+  padding-top: 0
+
+.mods_reset
+  color: #FFF
+  font-weight: normal
+  font-style: normal
+  text-decoration: none
+  background: transparent
+
+.mods_bold
+  font-weight: bold
+
+.mods_italic
+  font-style: italic
+
+.mods_underline
+  text-decoration: underline
+
+$colors: (
+  "black": #000,
+  "red": #DD2140,
+  "green": #0F0,
+  "yellow": #FF0,
+  "blue": #04A,
+  "magent": #F0F,
+  "cyan": #0FF,
+  "white": #FFF,
+  "bright_black": #000,
+  "bright_red": #F04257,
+  "bright_green": #0F0,
+  "bright_yellow": #FF0,
+  "bright_blue": #08D,
+  "bright_magenta": #F0F,
+  "bright_cyan": #0FF,
+  "bright_white": #FFF,
+)
+
+@each $name, $color in $colors
+  .fore_#{$name}
+    color: $color
+
+  .back_#{$name}
+    background: $color

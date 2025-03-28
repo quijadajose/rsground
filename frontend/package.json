@@ -1,32 +1,38 @@
 {
-  "name": "frontend",
+  "name": "rsground-frontend",
   "private": true,
   "version": "0.0.0",
+  "description": "",
   "type": "module",
   "scripts": {
+    "start": "vite",
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@codemirror/lang-rust": "^6.0.1",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.4",
+    "@corvu/accordion": "^0.2.3",
+    "@corvu/popover": "^0.2.0",
+    "@lezer/generator": "^1.7.2",
+    "@lezer/highlight": "^1.2.1",
+    "@lezer/lr": "^1.4.2",
+    "@solid-codemirror/codemirror": "^1.0.4",
+    "codemirror": "^6.0.1",
+    "dockview-core": "^4.2.1",
+    "prettier": "^3.5.3",
+    "sass": "^1.81.0",
+    "solid-codemirror": "^2.3.1",
+    "solid-icons": "^1.1.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "vite-plugin-solid": "^2.11.6"
   },
   "dependencies": {
-    "@uiw/react-codemirror": "^4.23.0",
-    "lucide-react": "^0.438.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "simple-icons": "^13.8.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.9.0",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "eslint": "^9.9.0",
-    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-    "eslint-plugin-react-refresh": "^0.4.9",
-    "globals": "^15.9.0",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.6"
+    "solid-js": "1.7.x"
   }
 }

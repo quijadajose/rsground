@@ -1,8 +1,8 @@
-use std::fmt::{Display, Formatter, Result as FmtResult, Error as FmtError};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
-use thiserror::Error;
 use serde_repr::*;
+use std::fmt::{Display, Error as FmtError, Formatter, Result as FmtResult};
+use thiserror::Error;
 
 #[derive(Debug, Error, Serialize)]
 pub enum ActError {
@@ -13,14 +13,17 @@ pub enum ActError {
     InvalidToml,
 
     #[error("This request requires content")]
-    MissingContent
+    MissingContent,
 }
 
 pub trait RequestActor {
     type ContentType;
 
-    fn act(&self, op: &RunnerRequestOp, content: &Option<Self::ContentType>)
-    -> Result<(), ActError>;
+    fn act(
+        &self,
+        op: &RunnerRequestOp,
+        content: &Option<Self::ContentType>,
+    ) -> Result<(), ActError>;
 }
 
 #[derive(Deserialize_repr)]
@@ -39,19 +42,19 @@ pub enum RunnerResponseOp {
     ParseError = 1 << 2,
     RustAnalyzer = 1 << 3,
     InvalidToml = 1 << 4,
-    MissingContent = 1 << 5
+    MissingContent = 1 << 5,
 }
 
 #[derive(Deserialize)]
 pub struct RunnerRequest<TMessage> {
     op: RunnerRequestOp,
-    content: Option<TMessage>
+    content: Option<TMessage>,
 }
 
 #[derive(Serialize)]
 pub struct RunnerResponse<TMessage> {
     op: RunnerResponseOp,
-    content: Option<TMessage>
+    content: Option<TMessage>,
 }
 
 impl<TMessage> RunnerRequest<TMessage> {
@@ -63,10 +66,13 @@ impl<TMessage> RunnerRequest<TMessage> {
         &self.content
     }
 
-    pub fn act(&self, actor: &impl RequestActor<ContentType = TMessage>) -> RunnerResponse<ActError> {
+    pub fn act(
+        &self,
+        actor: &impl RequestActor<ContentType = TMessage>,
+    ) -> RunnerResponse<ActError> {
         match actor.act(self.op_code(), self.content()) {
             Ok(_) => RunnerResponse::aknowledge(),
-            Err(err) => RunnerResponse::from(err)
+            Err(err) => RunnerResponse::from(err),
         }
     }
 }
@@ -75,7 +81,7 @@ impl<'r, TMessage: Deserialize<'r>> TryFrom<&'r String> for RunnerRequest<TMessa
     type Error = RunnerResponse<()>;
 
     fn try_from(value: &'r String) -> Result<Self, Self::Error> {
-        from_str::<Self>(value).map_err(|_| RunnerResponse::parse_error() )
+        from_str::<Self>(value).map_err(|_| RunnerResponse::parse_error())
     }
 }
 
@@ -110,7 +116,7 @@ impl From<ActError> for RunnerResponse<ActError> {
         match value {
             ActError::InternalServerError => Self::internal_server_error(value),
             ActError::InvalidToml => Self::invalid_toml(value),
-            ActError::MissingContent => Self::missing_content(value)
+            ActError::MissingContent => Self::missing_content(value),
         }
     }
 }
