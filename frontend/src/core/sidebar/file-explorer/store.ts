@@ -113,7 +113,7 @@ export const fileExplorer = createStore<FileExplorerStore>({
         id: nextId++,
         fullPath: "FileB.rs",
         filename: "FileB.rs",
-        synced: false,
+        synced: true,
         content: "",
       },
     },

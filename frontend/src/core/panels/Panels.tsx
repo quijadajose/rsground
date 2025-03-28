@@ -4,11 +4,13 @@ import {
   DockviewComponent,
   DockviewTheme,
   IContentRenderer,
-  ITabRenderer,
 } from "dockview-core";
+import {} from "solid-codemirror";
 
 import styles from "./Panels.module.sass";
 import "./dockview.sass";
+import { CodePanel } from "./CodePanel";
+import { OutputPanel } from "./OutputPanel";
 
 export function Panels() {
   const element = <div class={styles.container} /> as HTMLElement;
@@ -25,39 +27,45 @@ export function Panels() {
     singleTabMode: "default",
 
     createComponent(options) {
-      const element = (
-        <div class={styles.panel}>CHILD {options.id}-{options.name}</div>
-      ) as HTMLElement;
+      const element = (options.name == "code"
+        ? CodePanel()
+        : options.name == "output"
+        ? OutputPanel()
+        : <span>Esto es canallesco</span>) as HTMLElement;
 
       return {
         element,
         init(_params) {},
       } satisfies IContentRenderer;
     },
+  });
 
-    createTabComponent(options) {
-      const element = (
-        <div class={styles.tab}>TAB {options.id}-{options.name}</div>
-      ) as HTMLElement;
+  dockview.api.onDidRemovePanel((e) => {
+    if (e.id == "output") {
+      dockview.api.addPanel({
+        id: "output",
+        component: "output",
+        title: "Output",
+        initialHeight: 20,
+        minimumHeight: 50,
+        position: { direction: "below" },
+      });
+    }
+  })
 
-      return {
-        element,
-        init(_params) {
-        },
-      } satisfies ITabRenderer;
-    },
+  dockview.api.addPanel({
+    id: "file:main.rs",
+    component: "code",
+    title: "main.rs",
   });
 
   dockview.api.addPanel({
-    id: "welcome-1",
-    component: "welcome",
-    title: "Welcome",
-  });
-  dockview.api.addPanel({
-    id: "welcome-2",
-    component: "welcome",
-    title: "Welcome",
-    position: { referencePanel: "welcome-1", direction: "right" },
+    id: "output",
+    component: "output",
+    title: "Output",
+    initialHeight: 20,
+    minimumHeight: 50,
+    position: { direction: "below" },
   });
 
   return element;

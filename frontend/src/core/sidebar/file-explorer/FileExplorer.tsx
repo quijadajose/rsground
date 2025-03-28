@@ -44,7 +44,7 @@ function RenderFile({ data }: { data: File }) {
       as="li"
       classList={{
         [styles.entry]: true,
-        [styles.entry_syncing]: data.synced,
+        [styles.entry_syncing]: !data.synced,
       }}
       options={{
         [data.filename]: { disabled: true },
