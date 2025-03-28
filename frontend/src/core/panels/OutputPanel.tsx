@@ -131,7 +131,12 @@ export function OutputPanel() {
       addAnsiStyles(newNode, ansiCode);
 
       if (accumulatedContent.length) {
-        lastNode.append(newNode);
+        // Reduce children depth
+        if (newNode.dataset["ansi"] == "0") {
+          node.append(newNode);
+        } else {
+          lastNode.append(newNode);
+        }
         lastNode = newNode;
         accumulatedContent = "";
       }
