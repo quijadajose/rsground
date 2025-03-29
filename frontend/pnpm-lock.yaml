@@ -27,9 +27,15 @@ importers:
       '@corvu/accordion':
         specifier: ^0.2.3
         version: 0.2.4(solid-js@1.7.12)
+      '@corvu/dialog':
+        specifier: ^0.2.4
+        version: 0.2.4(solid-js@1.7.12)
       '@corvu/popover':
         specifier: ^0.2.0
         version: 0.2.0(solid-js@1.7.12)
+      '@corvu/tooltip':
+        specifier: ^0.2.2
+        version: 0.2.2(solid-js@1.7.12)
       '@lezer/generator':
         specifier: ^1.7.2
         version: 1.7.2
@@ -253,6 +259,11 @@ packages:
 
   '@corvu/popover@0.2.0':
     resolution: {integrity: sha512-zynRWyRV7mk2uX7t/COQL4OEa6H6FBgOxxlXLQJ1BV8hTiBJwmfAN/yB/9jy+zlp0G9vp64E8VdsNn6gxUEUEQ==}
+    peerDependencies:
+      solid-js: ^1.8
+
+  '@corvu/tooltip@0.2.2':
+    resolution: {integrity: sha512-gyOBJ43GNAecDtmWc68A5YJvifXWwK0VZZdTOcFbX0rVQUA2ihBMltRE4oj7/lKidg2gXALjmFr71Blt5s3YuQ==}
     peerDependencies:
       solid-js: ^1.8
 
@@ -1642,6 +1653,14 @@ snapshots:
       '@corvu/utils': 0.3.2(solid-js@1.7.12)
       '@floating-ui/dom': 1.6.13
       solid-js: 1.7.12
+
+  '@corvu/tooltip@0.2.2(solid-js@1.7.12)':
+    dependencies:
+      '@corvu/utils': 0.4.2(solid-js@1.7.12)
+      '@floating-ui/dom': 1.6.13
+      solid-dismissible: 0.1.1(solid-js@1.7.12)
+      solid-js: 1.7.12
+      solid-presence: 0.2.0(solid-js@1.7.12)
 
   '@corvu/utils@0.3.2(solid-js@1.7.12)':
     dependencies:

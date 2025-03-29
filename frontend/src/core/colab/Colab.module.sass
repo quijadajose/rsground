@@ -1,0 +1,238 @@
+.overlay
+  position: fixed
+  inset: 0
+  background: #0002
+  z-index: 3
+
+.content
+  z-index: 3
+
+  position: fixed
+  top: 50%
+  left: 50%
+  transform: translate(-50%, -50%)
+  max-height: 95vh
+  overflow: auto
+
+  padding: 1rem 1rem
+  background: #3D3D3D
+  border: 2px solid #000
+  border-radius: 12px
+  box-shadow: 2px 2px 0 0 #000
+
+  display: flex
+  flex-direction: column
+  gap: .5rem
+
+.title
+  text-align: center
+  margin-bottom: 1rem
+
+.subtitle
+  margin-top: 1rem
+
+.text_input
+  display: flex
+  flex-direction: column
+  gap: 0.25rem
+
+  > span
+    padding-left: 0.5rem
+    font-size: 0.8rem
+
+  > input,
+  > div
+    display: flex
+    align-items: center
+    gap: 0.5rem
+
+    padding: 0.25rem 0.5rem
+    color: white
+    background: #222222
+    border: 1px solid #000
+    border-radius: 8px
+    box-shadow: 2px 2px 0 0 #000
+    outline: none
+
+    &::placeholder,
+    > input::placeholder
+      color: #888888
+
+    > input
+      appearance: none
+      background: transparent
+      border: none
+      outline: none
+      color: white
+
+.checkbox_input
+  display: flex
+  justify-content: space-between
+  align-items: center
+
+  > span
+    padding-left: 0.5rem
+    font-size: 0.8rem
+
+  > input
+    /* Add if not using autoprefixer */
+    -webkit-appearance: none
+    /* Remove most all native input styles */
+    appearance: none
+    /* For iOS < 15 */
+    background-color: var(--form-background)
+    /* Not removed via appearance */
+    margin: 0
+
+    padding: 0.25rem 0.3rem
+    width: 3em
+    height: 1.5rem
+    position: relative
+    background: #BA1636
+    border: 1px solid #000
+    border-radius: 8px
+    box-shadow: 2px 2px 0 0 #000
+    outline: none
+
+    transition: background 200ms ease
+
+    &:checked
+      background: #0F8646
+
+    &::before
+      content: ""
+      position: absolute
+      height: 1em
+      background: #FFF
+      border-radius: 3px
+      display: block
+      transition: 200ms ease-in-out
+      transition-property: left, right
+
+      animation: 200ms ease-in-out forwards checkbox-off
+
+      @media (prefers-reduce-motion)
+        animation: none
+        right: 1.7em
+        left: 0.3em
+
+    @keyframes checkbox-off
+      0%
+        left: 1.7em
+        right: 0.3em
+
+      50%
+        right: #{1.7em / 2}
+        left: 0.3em
+
+      100%
+        right: 1.7em
+        left: 0.3em
+
+    &:checked::before
+      animation: 200ms ease-in-out forwards checkbox-on
+
+      @media (prefers-reduce-motion)
+        animation: none
+        right: 0.3em
+        left: 1.7em
+
+    @keyframes checkbox-on
+      0%
+        right: 1.7em
+        left: 0.3em
+
+      50%
+        left: #{1.7em / 2}
+        right: 0.3em
+
+      100%
+        left: 1.7em
+        right: 0.3em
+
+.select_box
+  background: #222222
+  border: 1px solid #000
+  border-radius: 8px
+  box-shadow: 2px 2px 0 0 #000
+  color: white
+  font-size: .8rem
+
+  display: flex
+  align-items: center
+
+  > span
+    padding: 0.25rem 0.5rem
+    padding-right: 0.25rem
+    border-right: 1px solid #000
+
+  > div
+    padding: 0.25rem
+    transform: translateY(1px)
+
+.select_list
+  z-index: 3
+
+  display: flex
+  flex-direction: column
+  background: #3D3D3D
+  border: 2px solid #000
+  border-radius: 8px
+  box-shadow: 2px 2px 0 0 #000
+  overflow: hidden
+
+  transform: translateX(5px)
+
+  > label
+    width: 100%
+    display: flex
+
+    > input
+      -webkit-appearance: none
+      appearance: none
+
+      &:checked + span
+        background: #D9D6FE
+        color: black
+
+    > span
+      width: 100%
+      padding: 0.25rem 0.5rem
+      font-size: 0.8rem
+
+.user_list
+  margin-top: 0.25rem
+  display: flex
+  flex-direction: column
+  gap: 0.25rem
+
+  > li
+    list-style-type: none
+
+.member
+  display: flex
+  justify-content: space-between
+  align-items: center
+
+.button_group
+  background: #222222
+  border: 2px solid #000
+  border-radius: 8px
+  color: white
+
+  overflow: hidden
+
+  > button
+    padding: 0.25rem 0.5rem
+    border: none
+    background: transparent
+    color: currentColor
+    font-size: 0.8rem
+
+  .success
+    background: #48E78F
+    color: black
+
+  .error
+    background: #F87480
+    color: black
