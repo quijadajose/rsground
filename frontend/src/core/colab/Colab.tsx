@@ -12,6 +12,7 @@ import { isColabOpen, setIsColabOpen } from "./store";
 import styles from "./Colab.module.sass";
 import { For } from "solid-js";
 import { TextField } from "../../components/TextField";
+import { Switchbox } from "../../components/Switchbox";
 
 export function Colab() {
   const requestUsers = ["CHIWO", "Jopzgo", "gg0074x", "Otro"];
@@ -34,7 +35,7 @@ export function Colab() {
 
               <label class={styles.checkbox_input}>
                 Public room
-                <input type="checkbox" />
+                <Switchbox />
               </label>
 
               <TextField

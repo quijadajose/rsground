@@ -1,0 +1,76 @@
+.base
+  /* Add if not using autoprefixer */
+  -webkit-appearance: none
+  /* Remove most all native input styles */
+  appearance: none
+  /* For iOS < 15 */
+  background-color: var(--form-background)
+  /* Not removed via appearance */
+  margin: 0
+
+  padding: 0.25rem 0.3rem
+  width: 3em
+  height: 1.5rem
+  position: relative
+  background: #BA1636
+  border: 1px solid #000
+  border-radius: 8px
+  box-shadow: 2px 2px 0 0 #000
+  outline: none
+
+  transition: background 200ms ease
+
+  @media (prefers-reduced-motion)
+    transition: none
+
+  &:checked
+    background: #0F8646
+
+  &::before
+    content: ""
+    position: absolute
+    height: 1em
+    background: #FFF
+    border-radius: 3px
+    display: block
+
+    animation: 200ms ease-in-out forwards checkbox-off
+
+    @media (prefers-reduced-motion)
+      animation: none
+      right: 1.7em
+      left: 0.3em
+
+  @keyframes checkbox-off
+    0%
+      left: 1.7em
+      right: 0.3em
+
+    50%
+      right: #{1.7em / 2}
+      left: 0.3em
+
+    100%
+      right: 1.7em
+      left: 0.3em
+
+  &:checked::before
+    animation: 200ms ease-in-out forwards checkbox-on
+
+    @media (prefers-reduced-motion)
+      animation: none
+      right: 0.3em
+      left: 1.7em
+
+  @keyframes checkbox-on
+    0%
+      right: 1.7em
+      left: 0.3em
+
+    50%
+      left: #{1.7em / 2}
+      right: 0.3em
+
+    100%
+      left: 1.7em
+      right: 0.3em
