@@ -1,0 +1,27 @@
+.base
+  padding: 0.5rem 0.5rem
+  color: white
+  background: #222222
+  border: 1px solid #000
+  border-radius: 8px
+  box-shadow: 2px 2px 0 0 #000
+  outline: none
+
+.single
+  &::placeholder
+    color: #888888
+
+.group
+  display: flex
+  align-items: center
+  gap: 0.5rem
+
+  > input
+    appearance: none
+    background: transparent
+    border: none
+    outline: none
+    color: white
+
+    &::placeholder
+      color: #888888

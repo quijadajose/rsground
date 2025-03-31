@@ -11,6 +11,7 @@ import { isColabOpen, setIsColabOpen } from "./store";
 
 import styles from "./Colab.module.sass";
 import { For } from "solid-js";
+import { TextField } from "../../components/TextField";
 
 export function Colab() {
   const requestUsers = ["CHIWO", "Jopzgo", "gg0074x", "Otro"];
@@ -25,34 +26,31 @@ export function Colab() {
           <div class={styles.container}>
             <div>
               <h3 class={styles.subtitle}>Room settings</h3>
-              <label class={styles.text_input}>
-                <div>
-                  <FaSolidUser />
-                  <input placeholder="Write your name" />
-                </div>
-              </label>
+
+              <TextField
+                beforeIcon={<FaSolidUser />}
+                placeholder="Write your name"
+              />
 
               <label class={styles.checkbox_input}>
                 Public room
                 <input type="checkbox" />
               </label>
 
-              <label class={styles.text_input}>
-                <div>
-                  <FaSolidLock />
-                  <input placeholder="Leave empty for no password" />
-                </div>
-              </label>
+              <TextField
+                beforeIcon={<FaSolidLock />}
+                placeholder="Leave empty for no password"
+              />
             </div>
 
             <div>
               <h3 class={styles.subtitle}>Members</h3>
-              <label class={styles.text_input}>
-                <div>
-                  <FaBrandsGithub />
-                  <input placeholder="Username" />
-                </div>
-              </label>
+
+              <TextField
+                beforeIcon={<FaBrandsGithub />}
+                placeholder="Username"
+              />
+
               <ul class={styles.user_list}>
                 <For each={requestUsers}>
                   {(name, idx) => (
