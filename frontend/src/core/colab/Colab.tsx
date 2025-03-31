@@ -13,6 +13,7 @@ import styles from "./Colab.module.sass";
 import { For } from "solid-js";
 import { TextField } from "../../components/TextField";
 import { Switchbox } from "../../components/Switchbox";
+import { SelectField } from "../../components/SelectField";
 
 export function Colab() {
   const requestUsers = ["CHIWO", "Jopzgo", "gg0074x", "Otro"];
@@ -60,34 +61,10 @@ export function Colab() {
                         {name}
                       </span>
 
-                      <Popover placement="right-start">
-                        <Popover.Trigger class={styles.select_box}>
-                          <span>{idx() % 2 === 0 ? "Editor" : "Viewer"}</span>
-                          <div>
-                            <FaSolidChevronDown width="0.5em" height="0.5em" />
-                          </div>
-                        </Popover.Trigger>
-                        <Popover.Portal>
-                          <Popover.Content as="ul" class={styles.select_list}>
-                            <label>
-                              <input
-                                type="radio"
-                                name="select"
-                                checked={idx() % 2 === 0}
-                              />
-                              <span>Editor</span>
-                            </label>
-                            <label>
-                              <input
-                                type="radio"
-                                name="select"
-                                checked={idx() % 2 !== 0}
-                              />
-                              <span>Viewer</span>
-                            </label>
-                          </Popover.Content>
-                        </Popover.Portal>
-                      </Popover>
+                      <SelectField
+                        value={idx() % 2 == 0 ? "Editor" : "Viewer"}
+                        options={["Editor", "Viewer"]}
+                      />
                     </li>
                   )}
                 </For>
