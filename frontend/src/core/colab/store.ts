@@ -1,3 +1,3 @@
 import { createSignal } from "solid-js";
 
-export const [isColabOpen, setIsColabOpen] = createSignal(true);
+export const [isColabOpen, setIsColabOpen] = createSignal(false);
