@@ -31,8 +31,6 @@ fn generate_unique_replica_id() -> u64 {
     REPLICA_ID_COUNTER.fetch_add(1, Ordering::SeqCst)
 }
 
-
-// github
 #[derive(Deserialize, Debug)]
 struct GitHubUser {
     login: String,
@@ -95,7 +93,6 @@ async fn auth_callback(query: web::Query<AuthRequest>, oauth: web::Data<OAuthDat
             let access_token = token.access_token().secret();
             match fetch_github_user(access_token).await {
                 Ok(github_user) => {
-                    // Creamos el JWT
                     let expiration = Utc::now() + Duration::hours(12);
                     let claims = Claims {
                         sub: github_user.login.clone(),
@@ -180,8 +177,6 @@ where
         })
     }
 }
-
-// oauth
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
