@@ -15,7 +15,8 @@
   :global(.cm-selectionBackground)
     background: #0004 !important
 
-  :global(.cm-matchingBracket)
+  :global(.cm-matchingBracket),
+  :global(.cm-selectionMatch)
     background: #F0490645 !important
 
   :global(.cm-foldGutter)
@@ -23,6 +24,33 @@
 
   :global(.cm-cursor)
     border-color: #FFF
+
+  .completion_tooltip
+    background: #3D3D3D
+    border: 2px solid #000
+    border-radius: 8px
+    box-shadow: 2px 2px 0 0 #000
+    overflow: hidden
+
+  .completion_option
+    padding: 0.15rem 0.25rem !important
+    display: flex
+    flex-direction: row-reverse
+    justify-content: space-between
+
+    :global(.cm-completionIcon)
+      filter: contrast(1) brightness(1000%)
+
+    &:hover
+      filter: brightness(0.8)
+      background: #3D3D3D
+
+    &[aria-selected]
+      background: #D9D6FE !important
+      color: #000 !important
+
+      :global(.cm-completionIcon)
+        filter: contrast(1) brightness(0%)
 
 .keyword
   color: #FF6E1F
