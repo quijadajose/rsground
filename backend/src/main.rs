@@ -1,39 +1,66 @@
-use actix_web::{web::get, App, HttpServer};
-use flexi_logger::{Duplicate, FileSpec, Logger};
-use log::{info, warn};
-use routes::sessions::session_ws;
-use std::io::Result;
-use utils::{
-    analyzer::analyzer_version,
-    logger::{format_colored_log, format_log},
+use actix_web::{web, App, HttpServer};
+use std::{
+    env,
+    sync::{Arc, Mutex},
 };
+mod auth;
+mod middleware;
+mod models;
+mod state;
+mod ws;
+use auth::{auth_callback, guest_jwt, handlers::OAuthData, health, oauth as oauth_routes};
+use middleware::jwt::JwtMiddleware;
+use models::project::ProjectManager;
+use state::AppState;
+use ws::websocket_handler;
 
-mod routes;
-mod utils;
+use dotenv::dotenv;
+use log::info;
+use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, RedirectUrl, TokenUrl};
 
 #[actix_web::main]
-async fn main() -> Result<()> {
-    Logger::try_with_str("info")
-        .unwrap()
-        .log_to_file(
-            FileSpec::default()
-                .basename("rsground_backend")
-                .use_timestamp(false),
-        )
-        .duplicate_to_stdout(Duplicate::Info)
-        .format_for_files(format_log)
-        .format_for_stdout(format_colored_log)
-        .start()
-        .unwrap();
+async fn main() -> std::io::Result<()> {
+    env_logger::init();
+    dotenv().ok();
 
-    if let Some(version) = analyzer_version() {
-        info!("Rust analyzer found: {version}");
-    } else {
-        warn!("Rust analyzer is not found in the system, LSP features will be disabled.");
-    }
+    let client_id = ClientId::new(env::var("GITHUB_CLIENT_ID").expect("Falta el client id"));
+    let client_secret =
+        ClientSecret::new(env::var("GITHUB_CLIENT_SECRET").expect("Falta el client secret"));
 
-    HttpServer::new(|| App::new().route("/session", get().to(session_ws)))
-        .bind(("127.0.0.1", 5174))?
-        .run()
-        .await
+    let auth_url = AuthUrl::new("https://github.com/login/oauth/authorize".to_string())
+        .expect("URL de autorización inválida");
+    let token_url = TokenUrl::new("https://github.com/login/oauth/access_token".to_string())
+        .expect("URL de token inválida");
+
+    let redirect_uri = RedirectUrl::new("http://localhost:8080/auth/callback".to_string())
+        .expect("URL de redirección inválida");
+
+    let client = BasicClient::new(client_id, Some(client_secret), auth_url, Some(token_url))
+        .set_redirect_uri(redirect_uri);
+
+    let oauth_data = web::Data::new(OAuthData { client });
+
+    info!("Iniciando servidor Actix-Web");
+
+    let app_state = Arc::new(AppState {
+        manager: Mutex::new(ProjectManager::new()).into(),
+    });
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(app_state.clone()))
+            .app_data(oauth_data.clone())
+            .service(health)
+            .service(oauth_routes)
+            .service(auth_callback)
+            .service(guest_jwt)
+            .service(
+                web::scope("")
+                    .wrap(JwtMiddleware)
+                    .service(websocket_handler),
+            )
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }
